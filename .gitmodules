@@ -1,0 +1,3 @@
+[submodule "SimpleUi"]
+	path = SimpleUi
+	url = git@github.com:Lycea/SimpleUi.git
