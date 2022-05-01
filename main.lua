@@ -18,6 +18,8 @@ debug_view = false
 show_enemies = true
 show_items = true
 
+show_tile_info = false
+
 --------------------
 --color settings
 
@@ -41,6 +43,9 @@ function enable_debug()
   debug_view = not debug_view
 end
 
+function enable_entity_info()
+end
+
 function draw_grid()
   for id, tile in pairs(grid) do
     if tile.state == "wall" then
@@ -49,12 +54,20 @@ function draw_grid()
     elseif tile.state == "floor" then
       love.graphics.setColor(unpack(colors.non_blocking))
       love.graphics.rectangle("fill",grid_start.x + tile.x * pixel_size, grid_start.y + tile.y * pixel_size, pixel_size, pixel_size)
-    elseif tile.state == "entity" and show_enemies then
-      love.graphics.setColor(unpack(colors.entity))
-      love.graphics.rectangle("fill",grid_start.x + tile.x * pixel_size, grid_start.y + tile.y * pixel_size, pixel_size, pixel_size)
-    elseif tile.state == "item" and show_items then
+    end
+  end
+
+  if show_items then
+    for id, item in pairs(items) do
       love.graphics.setColor(unpack(colors.item))
-      love.graphics.rectangle("fill",grid_start.x + tile.x * pixel_size, grid_start.y + tile.y * pixel_size, pixel_size, pixel_size)
+      love.graphics.rectangle("fill",grid_start.x + item.x * pixel_size, grid_start.y + item.y * pixel_size, pixel_size, pixel_size)
+    end
+  end
+
+  if show_enemies then
+    for id, enemy in pairs(entities) do
+      love.graphics.setColor(unpack(colors.entity))
+      love.graphics.rectangle("fill",grid_start.x + enemy.x * pixel_size, grid_start.y + enemy.y * pixel_size, pixel_size, pixel_size)
     end
   end
 end
@@ -107,7 +120,7 @@ end
 function love.filedropped(file)
   print(file:getFilename(),string.find( file:getFilename() ,".json" ))
 
-  if string.find( file:getFilename() ,".json" )then
+  if string.find( file:getFilename() ,".json" ) then
 
     loaded_file = file:getFilename()
     file:open("r")
@@ -117,9 +130,11 @@ function love.filedropped(file)
     if save_file["map"] ~= nil then
       for _, tile in pairs(save_file.map.tiles) do
         if tile.blocked == true then
-          table.insert(grid,{ state = "wall",x=tile.x,y=tile.y})
+          tile.state = "wall"  
+          table.insert(grid,tile)
         else
-          table.insert(grid,{ state = "floor",x=tile.x,y=tile.y})
+          tile.state = "floor" 
+          table.insert(grid,tile)
         end
       end
     end
@@ -128,9 +143,11 @@ function love.filedropped(file)
     if save_file["entities"] ~= nil then
       for id, entity in pairs(save_file.entities) do
         if entity.item then
-          table.insert(grid,{ state = "item",x=entity.x,y=entity.y})
+          entity.state = "item"
+          table.insert(items,entity)
         else
-          table.insert(grid,{ state = "entity",x=entity.x,y=entity.y})
+          entity.state = "entity"
+          table.insert(entities, entity)
         end
       end
     end
